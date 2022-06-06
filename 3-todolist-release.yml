@@ -1,18 +1,24 @@
+parameters:
+- name: dockerTag
+  displayName: Docker Tag
+  type: string
+  default: latest
+
 trigger:
 - none
 
 # Automatically deploy to dev and stg only; not prd, that's a manual release.
-resources:
-  pipelines:
-  - pipeline: 2-build-trigger # Name of the pipeline resource.
-    source: 2-todolist-build  # Name of the pipeline to trigger this pipeline.
-    project: scratch          # Name of the project.
-    trigger:
-      branches:
-        include:
-        - dev
-        - stg
-        - feature/*
+# resources:
+#   pipelines:
+#   - pipeline: 2-build-trigger # Name of the pipeline resource.
+#     source: 2-todolist-build  # Name of the pipeline to trigger this pipeline.
+#     project: scratch          # Name of the project.
+#     trigger:
+#       branches:
+#         include:
+#         - dev
+#         - stg
+#         - feature/*
 
 variables:
   acrRepo:    'todolist'                                   # Update here.
@@ -41,7 +47,7 @@ jobs:
       acrRepo: $(acrRepo)
       rgName: $(rgNamePrd)
       webAppName: $(aseNamePri)
-      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+      tag: ${{ parameters.dockerTag }}
 
 # Deploy Docker Image to Azure PRD CEUS (Secondary).
 - job: 'deployDockerToAzurePrdCEUS'
@@ -57,7 +63,7 @@ jobs:
       acrRepo: $(acrRepo)
       rgName: $(rgNamePrd)
       webAppName: $(aseNameSec)
-      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+      tag: ${{ parameters.dockerTag }}
 
 # Deploy Docker Image to Azure DEV EUS2.
 - job: 'deployDockerToAzureDevEUS2'
@@ -73,7 +79,7 @@ jobs:
       acrRepo: $(acrRepo)
       rgName: $(rgNamePrd)
       webAppName: $(aseNameDev)
-      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+      tag: ${{ parameters.dockerTag }}
 
 # Deploy Docker Image to Azure STG EUS2 (Primary).
 - job: 'deployDockerToAzureStgEUS2'
@@ -89,7 +95,7 @@ jobs:
       acrRepo: $(acrRepo)
       rgName: $(rgNamePrd)
       webAppName: $(aseNamePri)
-      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+      tag: ${{ parameters.dockerTag }}
 
 # Deploy Docker Image to Azure STG CEUS (Secondary).
 - job: 'deployDockerToAzureStgCEUS'
@@ -105,4 +111,4 @@ jobs:
       acrRepo: $(acrRepo)
       rgName: $(rgNamePrd)
       webAppName: $(aseNameSec)
-      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+      tag: ${{ parameters.dockerTag }}
