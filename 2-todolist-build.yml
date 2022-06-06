@@ -4,9 +4,12 @@ trigger:
       - '*'
   paths:
     include:
-      - '*'
-    exclude:
-      - terraform/*
+      - src/*
+    # exclude:
+    #   - terraform/*
+
+pr:
+- none
 
 variables:
   buildConfiguration: 'Release'                  # Update here.
@@ -39,4 +42,4 @@ jobs:
     parameters:
       acrRepo: $(acrRepo)
       acrName: $(acrName)
-      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+      tag: '$(Build.BuildNumber)-$(Build.SourceBranchName)'
