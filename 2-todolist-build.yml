@@ -4,9 +4,9 @@ trigger:
       - '*'
   paths:
     include:
-      - '*'
-    exclude:
-      - terraform/*
+      - src/*
+    # exclude:
+    #   - terraform/*
 
 variables:
   buildConfiguration: 'Release'                  # Update here.
