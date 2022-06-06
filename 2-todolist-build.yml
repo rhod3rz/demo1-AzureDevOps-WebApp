@@ -40,4 +40,4 @@ jobs:
       acrRepo: $(acrRepo)
       acrName: $(acrName)
       # tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
-      tag: '$(Build.SourceBranchName).$(Date:yyyyMMdd)$(Rev:.rr)'
+      tag: '$(Build.SourceBranchName)$(Date:yyyyMMdd)$(Rev:.r)'
