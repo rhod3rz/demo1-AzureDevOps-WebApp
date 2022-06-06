@@ -1,0 +1,108 @@
+trigger:
+- none
+
+# Automatically deploy to dev and stg only; not prd, that's a manual release.
+resources:
+  pipelines:
+  - pipeline: 2-build-trigger # Name of the pipeline resource.
+    source: 2-todolist-build  # Name of the pipeline to trigger this pipeline.
+    project: scratch          # Name of the project.
+    trigger:
+      branches:
+        include:
+        - dev
+        - stg
+        - feature/*
+
+variables:
+  acrRepo:    'todolist'                                   # Update here.
+  acrName:    'acrdlnteudemoapps210713'                    # Update here.
+  azureSub:   'payg2106'                                   # Update here.
+  objSuffix:  'todolist-220606-1000'                       # Update here; used for rg & ase name e.g. rg-prd-todolist-220523-1831
+  rgNamePrd:  'rg-prd-$(objSuffix)'                        # Update here; prd & stg share the same resource group.
+  rgNameDev:  'rg-dev-$(objSuffix)'                        # Update here.
+  aseNamePri: 'ase-prd-eus2-$(objSuffix)'                  # Update here.
+  aseNameDev: 'ase-dev-eus2-$(objSuffix)'                  # Update here.
+  aseNameSec: 'ase-prd-ceus-$(objSuffix)'                  # Update here.
+
+jobs:
+
+# Deploy Docker Image to Azure PRD EUS2 (Primary).
+- job: 'deployDockerToAzurePrdEUS2'
+  displayName: 'Deploy Docker Image to Azure PRD EUS2 (Primary)'
+  condition: eq(variables['Build.SourceBranchName'], 'prd')
+  pool:
+    vmImage: 'ubuntu-18.04'
+  steps:
+  - template: templates/dockerDeploy.yml
+    parameters:
+      azureSub: $(azureSub)
+      acrName: $(acrName)
+      acrRepo: $(acrRepo)
+      rgName: $(rgNamePrd)
+      webAppName: $(aseNamePri)
+      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+
+# Deploy Docker Image to Azure PRD CEUS (Secondary).
+- job: 'deployDockerToAzurePrdCEUS'
+  displayName: 'Deploy Docker Image to Azure PRD CEUS (Secondary)'
+  condition: eq(variables['Build.SourceBranchName'], 'prd')
+  pool:
+    vmImage: 'ubuntu-18.04'
+  steps:
+  - template: templates/dockerDeploy.yml
+    parameters:
+      azureSub: $(azureSub)
+      acrName: $(acrName)
+      acrRepo: $(acrRepo)
+      rgName: $(rgNamePrd)
+      webAppName: $(aseNameSec)
+      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+
+# Deploy Docker Image to Azure DEV EUS2.
+- job: 'deployDockerToAzureDevEUS2'
+  displayName: 'Deploy Docker Image to Azure DEV EUS2'
+  condition: eq(variables['Build.SourceBranchName'], 'dev')
+  pool:
+    vmImage: 'ubuntu-18.04'
+  steps:
+  - template: templates/dockerDeploy.yml
+    parameters:
+      azureSub: $(azureSub)
+      acrName: $(acrName)
+      acrRepo: $(acrRepo)
+      rgName: $(rgNamePrd)
+      webAppName: $(aseNameDev)
+      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+
+# Deploy Docker Image to Azure STG EUS2 (Primary).
+- job: 'deployDockerToAzureStgEUS2'
+  displayName: 'Deploy Docker Image to Azure STG EUS2 (Primary)'
+  condition: eq(variables['Build.SourceBranchName'], 'stg')
+  pool:
+    vmImage: 'ubuntu-18.04'
+  steps:
+  - template: templates/dockerDeploy.yml
+    parameters:
+      azureSub: $(azureSub)
+      acrName: $(acrName)
+      acrRepo: $(acrRepo)
+      rgName: $(rgNamePrd)
+      webAppName: $(aseNamePri)
+      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
+
+# Deploy Docker Image to Azure STG CEUS (Secondary).
+- job: 'deployDockerToAzureStgCEUS'
+  displayName: 'Deploy Docker Image to Azure STG CEUS (Secondary)'
+  condition: eq(variables['Build.SourceBranchName'], 'stg')
+  pool:
+    vmImage: 'ubuntu-18.04'
+  steps:
+  - template: templates/dockerDeploy.yml
+    parameters:
+      azureSub: $(azureSub)
+      acrName: $(acrName)
+      acrRepo: $(acrRepo)
+      rgName: $(rgNamePrd)
+      webAppName: $(aseNameSec)
+      tag: '$(Build.BuildId)-$(Build.SourceBranchName)'

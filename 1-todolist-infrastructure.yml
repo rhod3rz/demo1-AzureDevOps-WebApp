@@ -1,0 +1,79 @@
+trigger:
+- none
+
+variables:
+- group: 'kv-core-210713' # The name of the ado keyvault variable group.
+
+stages:
+
+  # Terraform 'plan' the web app infrastructure.
+  - stage: 'terraformPlan'
+    displayName: 'Terraform - Plan'
+    jobs:
+
+    # Initiate and plan terraform on prd (inc. stg slot); output artifact for review.
+    - job: 'terraformInitPrd'
+      displayName: 'Init & Plan (prd)'
+      condition: or(eq(variables['Build.SourceBranchName'], 'prd'), eq(variables['Build.SourceBranchName'], 'stg'))
+      pool:
+        vmImage: 'ubuntu-18.04'
+      steps:
+      - template: templates/terraformPlan.yml
+        parameters:
+          env: 'prd'
+
+    # Initiate and plan terraform on dev; output artifact for review.
+    - job: 'terraformInitDev'
+      displayName: 'Init & Plan (dev)'
+      # Only deploy if the previous stage completed, and the branch is not 'stg' or 'prd'.
+      condition: and(succeeded(), ne(variables['Build.SourceBranchName'], 'stg'), ne(variables['Build.SourceBranchName'], 'prd'))
+      pool:
+        vmImage: 'ubuntu-18.04'
+      steps:
+      - template: templates/terraformPlan.yml
+        parameters:
+          env: 'dev'
+
+  # Manual step to approve the terraform plan.
+  - stage: 'waitForValidationTerraform'
+    displayName: 'Wait for Validation'
+    dependsOn:
+    - terraformPlan
+    jobs:
+
+    # Manual step to approve the terraform plan.
+    - job: 'waitForValidationTerraform'
+      displayName: 'Wait for Validation'
+      pool: server
+      timeoutInMinutes: 4320 # Job times out in 3 days.
+      steps:
+      - template: templates/terraformWait.yml
+
+# Terraform 'apply' the azure infrasturcture.
+  - stage: 'terraformApply'
+    displayName: 'Terraform - Apply'
+    dependsOn:
+    - waitForValidationTerraform
+    jobs:
+
+    # Apply terraform on prd (and stg; stg is just a slot on prd, but this need to run to get webapp_name for deployment slot).
+    - job: 'terraformApplyPrd'
+      displayName: 'Apply (prd)'
+      condition: and(succeeded(),or(eq(variables['Build.SourceBranchName'], 'prd'), eq(variables['Build.SourceBranchName'], 'stg')))
+      pool:
+        vmImage: 'ubuntu-18.04'
+      steps:
+      - template: templates/terraformApply.yml
+        parameters:
+          env: 'prd'
+
+    # Apply terraform on dev.
+    - job: 'terraformApplyDev'
+      displayName: 'Apply (dev)'
+      condition: and(succeeded(),ne(variables['Build.SourceBranchName'], 'stg'),ne(variables['Build.SourceBranchName'], 'prd'))
+      pool:
+        vmImage: 'ubuntu-18.04'
+      steps:
+      - template: templates/terraformApply.yml
+        parameters:
+          env: 'dev'
