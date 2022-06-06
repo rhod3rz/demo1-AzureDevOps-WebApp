@@ -39,5 +39,4 @@ jobs:
     parameters:
       acrRepo: $(acrRepo)
       acrName: $(acrName)
-      # tag: '$(Build.BuildId)-$(Build.SourceBranchName)'
-      tag: "$(Build.SourceBranchName)$(Date:yyyyMMdd)$(Rev:.r)"
+      tag: '$(Build.BuildNumber)-$(Build.SourceBranchName)'
