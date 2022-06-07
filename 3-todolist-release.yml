@@ -1,8 +1,7 @@
 parameters:
 - name: dockerTag
-  displayName: Docker Tag
+  displayName: Docker Tag (Required)
   type: string
-  default: latest
 
 trigger:
 - none
