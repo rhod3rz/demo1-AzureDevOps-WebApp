@@ -1,6 +1,7 @@
 variable "location" {}
 variable "resource_group_name" {}
 variable "log_analytics_workspace_name" {}
+variable "appi_primary" {}
 variable "plan_name" {}
 variable "webapp_name" {}
 variable "acr_login_server" {}

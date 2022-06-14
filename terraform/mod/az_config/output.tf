@@ -2,6 +2,8 @@ output "item_name" {
   value = {
     afw_primary                = lower("afw-${var.environment}-${lookup(var.region_shortname_mapping, var.location_primary)}-${var.application_code}-${var.unique_id}")
     agw_primary                = lower("agw-${var.environment}-${lookup(var.region_shortname_mapping, var.location_primary)}-${var.application_code}-${var.unique_id}")
+    appi_primary               = lower("appi-${var.environment}-${lookup(var.region_shortname_mapping, var.location_primary)}-${var.application_code}-${var.unique_id}")
+    appi_secondary             = lower("appi-${var.environment}-${lookup(var.region_shortname_mapping, var.location_secondary)}-${var.application_code}-${var.unique_id}")
     aks_primary                = lower("aks-${var.environment}-${lookup(var.region_shortname_mapping, var.location_primary)}-${var.application_code}-${var.unique_id}")
     ase_primary                = lower("ase-${var.environment}-${lookup(var.region_shortname_mapping, var.location_primary)}-${var.application_code}-${var.unique_id}")
     ase_secondary              = lower("ase-${var.environment}-${lookup(var.region_shortname_mapping, var.location_secondary)}-${var.application_code}-${var.unique_id}")

@@ -30,7 +30,7 @@ namespace DotNetCoreSqlDb
             services.AddControllersWithViews();
             services.AddDbContext<MyDatabaseContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("MyDbConnection")));
-            // The following line enables Application Insights telemetry collection.
+            // The following line enables Application Insights telemetry collection https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core.
             services.AddApplicationInsightsTelemetry();
         }
 

@@ -6,6 +6,15 @@ resource "azurerm_log_analytics_workspace" "law" {
   sku                  = "PerGB2018"
 }
 
+# Create application insights.
+resource "azurerm_application_insights" "ai" {
+  name                = var.appi_primary
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  workspace_id        = azurerm_log_analytics_workspace.law.id
+  application_type    = "web"
+}
+
 # Create linux app service plan.
 resource "azurerm_service_plan" "sp" {
   location             = var.location
@@ -23,10 +32,11 @@ resource "azurerm_linux_web_app" "lwa" {
   service_plan_id      = azurerm_service_plan.sp.id
 
   app_settings = {
-    DOCKER_REGISTRY_SERVER_URL          = var.acr_login_server
-    DOCKER_REGISTRY_SERVER_USERNAME     = var.acr_admin_username
-    DOCKER_REGISTRY_SERVER_PASSWORD     = "${data.azurerm_key_vault_secret.kv_acrdlnteudemoapps210713.value}"
-    WEBSITES_ENABLE_APP_SERVICE_STORAGE = false
+    APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.ai.connection_string
+    DOCKER_REGISTRY_SERVER_URL            = var.acr_login_server
+    DOCKER_REGISTRY_SERVER_USERNAME       = var.acr_admin_username
+    DOCKER_REGISTRY_SERVER_PASSWORD       = "${data.azurerm_key_vault_secret.kv_acrdlnteudemoapps210713.value}"
+    WEBSITES_ENABLE_APP_SERVICE_STORAGE   = false
   }
 
   connection_string {
@@ -152,10 +162,10 @@ resource "azurerm_app_service_slot" "ass" {
   app_service_plan_id = azurerm_service_plan.sp.id
 
   app_settings = {
-    DOCKER_REGISTRY_SERVER_URL          = var.acr_login_server
-    DOCKER_REGISTRY_SERVER_USERNAME     = var.acr_admin_username
-    DOCKER_REGISTRY_SERVER_PASSWORD     = "${data.azurerm_key_vault_secret.kv_acrdlnteudemoapps210713.value}"
-    WEBSITES_ENABLE_APP_SERVICE_STORAGE = false
+    DOCKER_REGISTRY_SERVER_URL            = var.acr_login_server
+    DOCKER_REGISTRY_SERVER_USERNAME       = var.acr_admin_username
+    DOCKER_REGISTRY_SERVER_PASSWORD       = "${data.azurerm_key_vault_secret.kv_acrdlnteudemoapps210713.value}"
+    WEBSITES_ENABLE_APP_SERVICE_STORAGE   = false
   }
 
   site_config {
