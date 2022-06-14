@@ -1,0 +1,67 @@
+steps:
+
+# Install project dependencies.
+- task: DotNetCoreCLI@2
+  displayName: '** Restore project dependencies'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+# Build the project.
+- task: DotNetCoreCLI@2
+  displayName: '** Build the project - ${{ parameters.buildConfiguration }}'
+  inputs:
+    command: 'build'
+    arguments: '--no-restore --configuration ${{ parameters.buildConfiguration }}'
+    projects: '**/*.csproj'
+
+# Install 'Report Generator' tool; dotnet-tools.json must sit in root folder.
+- task: DotNetCoreCLI@2
+  displayName: '** Install report generator'
+  inputs:
+    command: custom
+    custom: tool
+    arguments: 'restore'
+
+# Test the project.
+- task: DotNetCoreCLI@2
+  displayName: '** Run unit tests - ${{ parameters.buildConfiguration }}'
+  inputs:
+    command: 'test'
+    arguments: '--no-build --configuration ${{ parameters.buildConfiguration }} /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    publishTestResults: true
+    projects: '**/*.Tests.csproj'
+
+# Create code coverage report.
+- task: DotNetCoreCLI@2
+  displayName: '** Create code coverage report'
+  inputs:
+    command: custom
+    custom: tool
+    arguments: 'run reportgenerator -reports:$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines'
+
+# Publish code coverage report.
+- task: PublishCodeCoverageResults@1
+  displayName: '** Publish code coverage report'
+  inputs:
+    codeCoverageTool: 'cobertura'
+    summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
+
+# Package the build and add the built results to a .zip file.
+- task: DotNetCoreCLI@2
+  displayName: '** Publish the project - ${{ parameters.buildConfiguration }}'
+  inputs:
+    command: 'publish'
+    projects: '**/*.csproj'
+    publishWebProjects: true
+    arguments: '--no-build --configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory)/${{ parameters.buildConfiguration }}'
+    zipAfterPublish: true
+
+# Publish the .zip to Azure Pipelines (only if the previous task is successful).
+- task: PublishBuildArtifacts@1
+  displayName: '** Publish Artifact: drop'
+  condition: succeeded()
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/${{ parameters.buildConfiguration }}'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
