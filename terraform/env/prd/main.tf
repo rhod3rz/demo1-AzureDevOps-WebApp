@@ -46,6 +46,7 @@ module "az_appservice_primary" {
   location                        = var.location_primary                                    /* The location */
   resource_group_name             = azurerm_resource_group.rg.name                          /* The resource group */
   log_analytics_workspace_name    = "${module.az_config.item_name.law_primary}"             /* The log analytics workspace name; must be globally unique across azure */
+  appi_name                       = "${module.az_config.item_name.appi_primary}"            /* The application insights name */
   plan_name                       = "${module.az_config.item_name.asp_primary}"             /* The plan name */
   webapp_name                     = "${module.az_config.item_name.ase_primary}"             /* The webapp name */
   acr_login_server                = "https://acrdlnteudemoapps210713.azurecr.io"            /* The acr server */
@@ -62,6 +63,7 @@ module "az_appservice_secondary" {
   location                        = var.location_secondary                                  /* The location */
   resource_group_name             = azurerm_resource_group.rg.name                          /* The resource group */
   log_analytics_workspace_name    = "${module.az_config.item_name.law_secondary}"           /* The log analytics workspace name; must be globally unique across azure */
+  appi_name                       = "${module.az_config.item_name.appi_secondary}"          /* The application insights names */
   plan_name                       = "${module.az_config.item_name.asp_secondary}"           /* The plan name */
   webapp_name                     = "${module.az_config.item_name.ase_secondary}"           /* The webapp name */
   acr_login_server                = "https://acrdlnteudemoapps210713.azurecr.io"            /* The acr server */
